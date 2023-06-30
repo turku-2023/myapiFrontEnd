@@ -5,14 +5,20 @@
 package com.mycompany.myapifrontend;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,6 +34,8 @@ public class BookUI extends javax.swing.JFrame {
      */
     public BookUI() {
         initComponents();
+        Singleton obj = Singleton.getInstance();
+        labelUsername.setText(obj.getUsername());
     }
 
     /**
@@ -42,6 +50,12 @@ public class BookUI extends javax.swing.JFrame {
         btnShowBooks = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         bookTable = new javax.swing.JTable();
+        labelUsername = new javax.swing.JLabel();
+        textName = new javax.swing.JTextField();
+        textISBN = new javax.swing.JTextField();
+        textAuthor = new javax.swing.JTextField();
+        btnAdd = new javax.swing.JButton();
+        labelResult = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -65,6 +79,23 @@ public class BookUI extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(bookTable);
 
+        labelUsername.setText("jLabel1");
+
+        textName.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+
+        textISBN.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+
+        textAuthor.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+
+        btnAdd.setText("Lisää");
+        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddActionPerformed(evt);
+            }
+        });
+
+        labelResult.setText("jLabel1");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -72,18 +103,42 @@ public class BookUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(44, 44, 44)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnShowBooks, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(217, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnShowBooks, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(102, 102, 102)
+                        .addComponent(labelUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(textName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                                .addComponent(textISBN, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(textAuthor))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(labelResult, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(99, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
-                .addComponent(btnShowBooks)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnShowBooks)
+                    .addComponent(labelUsername))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(187, Short.MAX_VALUE))
+                .addGap(36, 36, 36)
+                .addComponent(textName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(textAuthor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(textISBN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAdd))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(labelResult)
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         pack();
@@ -113,7 +168,7 @@ public class BookUI extends javax.swing.JFrame {
                     data[row][2] = jsonObject.get("isbn").toString();
 
                 }
-                String[] columnNames = {"Nimi", "Tekijä","ISBN"};
+                String[] columnNames = {"Nimi", "Tekijä", "ISBN"};
                 DefaultTableModel model = new DefaultTableModel(data, columnNames);
                 bookTable.setModel(model);
             }
@@ -122,6 +177,37 @@ public class BookUI extends javax.swing.JFrame {
             Logger.getLogger(BookUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnShowBooksActionPerformed
+
+    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        try {
+            
+            String result = bookPost(Environment.getBaseUrl() + "/book");
+            
+            labelResult.setText(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_btnAddActionPerformed
+    private String bookPost(String url) throws IOException {
+
+        String result = "";
+        Singleton objSingleton = Singleton.getInstance();
+        HttpPost post = new HttpPost(url);
+        post.setHeader("Authorization", objSingleton.getToken());
+
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("name", textName.getText()));
+        urlParameters.add(new BasicNameValuePair("author", textAuthor.getText()));
+        urlParameters.add(new BasicNameValuePair("isbn", textISBN.getText()));
+
+        post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(post)) {
+            result = EntityUtils.toString(response.getEntity());
+        }
+
+        return result;
+    }
 
     /**
      * @param args the command line arguments
@@ -160,7 +246,13 @@ public class BookUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable bookTable;
+    private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnShowBooks;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel labelResult;
+    private javax.swing.JLabel labelUsername;
+    private javax.swing.JTextField textAuthor;
+    private javax.swing.JTextField textISBN;
+    private javax.swing.JTextField textName;
     // End of variables declaration//GEN-END:variables
 }
