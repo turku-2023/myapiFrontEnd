@@ -132,10 +132,10 @@ public class LoginUI extends javax.swing.JFrame {
                 System.out.println(objectSingleton.getToken());
 
                 BookUI objectBookUI = new BookUI();
-                //objectBookUI.setVisible(rootPaneCheckingEnabled);
+                objectBookUI.setVisible(rootPaneCheckingEnabled);
                 //this.hide();
             } else {
-                //labelResult.setText("Wrong username/password");
+                labelResult.setText("Wrong username/password");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -145,7 +145,7 @@ public class LoginUI extends javax.swing.JFrame {
     private String sendLogin(String url) throws IOException {
         String result = "";
         Singleton objectSingleton = Singleton.getInstance();
-        String username=objectSingleton.getUsername();
+        String username = objectSingleton.getUsername();
         System.out.println("TESTAUS");
         System.out.println(username);
         System.out.println(password);

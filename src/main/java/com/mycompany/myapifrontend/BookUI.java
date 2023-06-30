@@ -4,6 +4,19 @@
  */
 package com.mycompany.myapifrontend;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 /**
  *
  * @author pekka
@@ -26,21 +39,89 @@ public class BookUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnShowBooks = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        bookTable = new javax.swing.JTable();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        btnShowBooks.setText("Näytä kirjat");
+        btnShowBooks.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowBooksActionPerformed(evt);
+            }
+        });
+
+        bookTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(bookTable);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(44, 44, 44)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnShowBooks, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(217, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(btnShowBooks)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(187, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnShowBooksActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowBooksActionPerformed
+        Singleton objSingleton = Singleton.getInstance();
+        HttpGet request = new HttpGet(Environment.getBaseUrl() + "/book");
+        request.setHeader("Authorization", objSingleton.getToken());
+        try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(request)) {
+
+            HttpEntity entity = response.getEntity();
+
+            if (entity != null) {
+                String result = EntityUtils.toString(entity);
+                JSONArray jsonArray = new JSONArray(result);
+
+                //Kaksiulotteinen taulukko, jossa rivien määrä datan mukaan ja sarakkeita 3
+                //(name, author,isbn)
+                String[][] data = new String[jsonArray.length()][3];
+
+                for (int row = 0; row < jsonArray.length(); row++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(row);
+
+                    data[row][0] = jsonObject.get("name").toString();
+                    data[row][1] = jsonObject.get("author").toString();
+                    data[row][2] = jsonObject.get("isbn").toString();
+
+                }
+                String[] columnNames = {"Nimi", "Tekijä","ISBN"};
+                DefaultTableModel model = new DefaultTableModel(data, columnNames);
+                bookTable.setModel(model);
+            }
+
+        } catch (IOException ex) {
+            Logger.getLogger(BookUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnShowBooksActionPerformed
 
     /**
      * @param args the command line arguments
@@ -78,5 +159,8 @@ public class BookUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable bookTable;
+    private javax.swing.JButton btnShowBooks;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }
